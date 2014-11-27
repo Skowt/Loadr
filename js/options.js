@@ -749,7 +749,7 @@ $( "#saveChangesSelectedLinks" ).click( function() {
 
     $(".selectedLinksGather .myBookmarksMainCheckbox").each(function() {
 
-        if ($(this).prop('checked') && $(this).closest('.myBookmarksSingleRow').attr('id') == 'selected') {
+        if ($(this).prop('checked')) {
 
             // Debug Test
             if (debug) {
@@ -766,11 +766,6 @@ $( "#saveChangesSelectedLinks" ).click( function() {
             updateBookmarkStorage( bookmarkName, faviconURL, bookmarkURL, bookmarkDays, bookmarkLists );
 
         } else {
-
-            // Remove normal bookmarks from selected links
-            if ($(this).closest('.myBookmarksSingleRow').attr('id') == 'selected') {
-                $(this).closest('.myBookmarksSingleRow').removeAttr('id'); // Remove 'selected' ID.
-            }
 
             // Remove from view
             $(this).closest('.myBookmarksSingleRow').fadeOut('medium',function () {
@@ -903,9 +898,6 @@ $( ".myBookmarksAddButton" ).click( function() {
                 if (debug) {
                   console.log("Bookmark Main Checkbox selected");
                 };
-
-                // Add ID to selected links
-                $(this).closest('.myBookmarksSingleRow').attr('id', 'selected');
 
                 $(this).closest('.myBookmarksSingleRow').fadeOut('medium',function () {
                     $(this).closest('.myBookmarksSingleRow').appendTo('.selectedLinksGather').fadeIn('medium',function() {
