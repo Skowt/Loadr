@@ -213,8 +213,6 @@ $(".dropdown-menu li").click( function( event ) {
 
     if (anyErrors) {
 
-        if (bookmarkStorageFull) {
-
         // Check if bookmarkStorage is full
         if (bookmarkStorageFull) {
 
