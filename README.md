@@ -2,8 +2,6 @@ Loadr - Chrome Extension
 ===================
 Easily add new bookmarks via the options menu or the Right-click context menu and select the days of the week you want your bookmarks to open. It's that simple.
 
-----------
-
 Overview
 =====
 Find yourself always opening the same set of bookmarks day in and out? Would you like the ability to open 'Work' or 'Social' lists of bookmarks at the click of a button?
