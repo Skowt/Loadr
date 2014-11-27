@@ -890,7 +890,7 @@ $( ".myBookmarksGather" ).on("click", ".myBookmarksSingleRow", function() {
 // 'Add Selected Bookmarks' button click.
 $( ".myBookmarksAddButton" ).click( function() {
 
-    var listofChecked = []; // Create a list of checked bookmarks. This will be used to see if we need to add an extension to the bookmark name
+    var listofChecked = {}; // Create a list of checked bookmarks. This will be used to see if we need to add an extension to the bookmark name
 
     $(".myBookmarksGather .myBookmarksMainCheckbox:checked").each(function() {
 
@@ -899,6 +899,44 @@ $( ".myBookmarksAddButton" ).click( function() {
                   console.log("Bookmark Main Checkbox selected");
                 };
 
+                // Add Bookmark to Array
+                var bookmarkName = $(this).closest('.myBookmarksSingleRow').find("label a").prop('innerText');
+                var faviconURL = $(this).closest('.myBookmarksSingleRow').find(".myBookmarksFavicon").prop('src');
+                var bookmarkURL = $(this).closest('.myBookmarksSingleRow').find("a").prop('href');
+                var bookmarkDays = '0000000';
+                var bookmarkLists = 'none';
+
+
+                // Check for duplicate bookmark names + URLs
+                for (bookmark in listofChecked) {
+
+                    // if Name and URL match, don't add it.
+                    if (bookmarkName == listofChecked[bookmark].name && bookmarkURL == listofChecked[bookmark].url) {
+
+                        // Skip adding it.
+                        return;
+
+                    // if Name matches but URL doesn't, update it.
+                    } else if (bookmarkName == listofChecked[bookmark].name) {
+
+                        // Add hiphen and number to it if URL's don't match
+                        for ( var i = 1; i < 10000; i++ ) {
+
+                            if (typeof(bookmarks[bookmarkName.trim() + " - " + i] ) != "object") {
+
+                                bookmarkName = bookmarkName.trim() + " - " + i;
+                                $(this).closest('.myBookmarksSingleRow').find("label a").prop({ 'innerText': bookmarkName}); // Update label
+                                break;
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                // Move element to selected links
                 $(this).closest('.myBookmarksSingleRow').fadeOut('medium',function () {
                     $(this).closest('.myBookmarksSingleRow').appendTo('.selectedLinksGather').fadeIn('medium',function() {
 
@@ -913,12 +951,12 @@ $( ".myBookmarksAddButton" ).click( function() {
 
                 });
 
-                // Add Bookmark to Array
-                var bookmarkName = $(this).closest('.myBookmarksSingleRow').find("label").prop('innerText');
-                var faviconURL = $(this).closest('.myBookmarksSingleRow').find(".myBookmarksFavicon").prop('src');
-                var bookmarkURL = $(this).closest('.myBookmarksSingleRow').find("a").prop('href');
-                var bookmarkDays = '0000000';
-                var bookmarkLists = 'none';
+                // Add bookmark to list to check
+                var tempObj = {};
+                tempObj.name = bookmarkName;
+                tempObj.url = bookmarkURL;
+
+                listofChecked[tempObj.name] = tempObj;
 
                 updateBookmarkStorage ( bookmarkName, faviconURL, bookmarkURL, bookmarkDays, bookmarkLists )
 
