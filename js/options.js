@@ -46,9 +46,6 @@ var bookmarks = {}; // Create Bookmarks Object
 // Create Storage Box and add objects
 var optionsPackage = { 'options' : {} };
 
-// Check if Context Menu updated storage
-var contextMenuAddedLink = true;
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// 2. Debugging Tools
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -487,6 +484,7 @@ function printBookmarks(bookmarkBar) {
     } else if (UserBookmark.title != "Bookmarks bar" && UserBookmark.title != "") {
 
         currentParent = UserBookmark.parentId;
+        UserBookmark.title = UserBookmark.title.trim(); // Remove whitespace from titles
 
         if ( lastFolderId != currentParent ) {
 
