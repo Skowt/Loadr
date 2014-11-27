@@ -875,7 +875,10 @@ $( ".myBookmarksGather" ).on("click", ".myBookmarksSingleRow", function() {
 
             $(".myBookmarksAddButton").show(400, "swing");
             anyChecked = true;
-            console.log('Checking each bookmark checkbox');
+
+            if (debug) {
+                console.log('Checking each bookmark checkbox');
+            }
 
             return;
         }
@@ -892,9 +895,9 @@ $( ".myBookmarksGather" ).on("click", ".myBookmarksSingleRow", function() {
 // 'Add Selected Bookmarks' button click.
 $( ".myBookmarksAddButton" ).click( function() {
 
-    $(".myBookmarksMainCheckbox").each(function() {
+    var listofChecked = []; // Create a list of checked bookmarks. This will be used to see if we need to add an extension to the bookmark name
 
-            if ($(this).prop('checked') && $(this).closest('.myBookmarksSingleRow').attr('id') != 'selected') {
+    $(".myBookmarksGather .myBookmarksMainCheckbox:checked").each(function() {
 
                 // Debug Test
                 if (debug) {
@@ -926,8 +929,6 @@ $( ".myBookmarksAddButton" ).click( function() {
                 var bookmarkLists = 'none';
 
                 updateBookmarkStorage ( bookmarkName, faviconURL, bookmarkURL, bookmarkDays, bookmarkLists )
-
-            }
 
     });
 
