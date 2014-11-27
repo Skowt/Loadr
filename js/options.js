@@ -165,8 +165,20 @@ function saveOptions( optionToSave, value ) {
     chrome.storage.sync.set(optionsPackage, function() {
 
         if (chrome.extension.lastError) {
-            console.log('Problem Saving Options: ' + chrome.extension.lastError.message);
+
+            if (debug) {
+                console.log('Problem Saving Options: ' + chrome.extension.lastError.message);
+            }
+
+            // Add switch if bookmark storage is full
+            if (chrome.extension.lastError.message == 'QUOTA_BYTES_PER_ITEM quota exceeded') {
+                bookmarkStorageFull = true;
+            } else {
+                bookmarkStorageFull = false;
+            }
+
             anyErrors = true;
+
         } else {
 
             if (debug) {
@@ -201,11 +213,27 @@ $(".dropdown-menu li").click( function( event ) {
 
     if (anyErrors) {
 
-        // Show alert with Danger!
-        var newAlert = '<div class="alert alert-danger alert-dismissible fade in out alertCustom alertCustomDanger" role="alert">' +
-          '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
-          '<strong>ERROR!</strong> Updating storage failed. Try again or contact developer!' +
-        '</div>'
+        if (bookmarkStorageFull) {
+
+        // Check if bookmarkStorage is full
+        if (bookmarkStorageFull) {
+
+            // Show alert with Danger!
+            var newAlert = '<div class="alert alert-danger alert-dismissible fade in out alertCustom alertCustomBookmarkStorageFull" role="alert">' +
+              '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
+              '<strong>ERROR!</strong> Updating storage failed. Bookmark Storage is full! Please remove some selected bookmarks.' +
+            '</div>'
+
+        } else {
+
+            // Show alert with Danger!
+            var newAlert = '<div class="alert alert-danger alert-dismissible fade in out alertCustom alertCustomDanger" role="alert">' +
+              '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
+              '<strong>ERROR!</strong> Updating storage failed. Try again or contact developer!' +
+            '</div>'
+
+        }
+
         errorFadeOut = false; // Don't fade out alerts as it's a danger
 
     } else {
@@ -272,6 +300,13 @@ function updateBookmarkStorage ( bookmarkNameOrg, bookmarkFaviconURL, bookmarkUR
             console.log('[' + bookmarkObjName['name'] + '] Problem Adding/Updating bookmark to Array: ' + chrome.extension.lastError.message);
             }
             anyErrors = true;
+
+            // Add switch if bookmark storage is full
+            if (chrome.extension.lastError.message == 'QUOTA_BYTES_PER_ITEM quota exceeded') {
+                bookmarkStorageFull = true;
+            } else {
+                bookmarkStorageFull = false;
+            }
 
         } else {
 
@@ -760,11 +795,24 @@ $( "#saveChangesSelectedLinks" ).click( function() {
     // Check for errors and alert
     if (anyErrors == true) {
 
-        // Show alert with Danger!
-        var newAlert = '<div class="alert alert-danger alert-dismissible fade in out alertCustom alertCustomDanger" role="alert">' +
-          '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
-          '<strong>ERROR!</strong> Updating storage failed. Try again or contact developer!' +
-        '</div>'
+        // Check if bookmarkStorage is full
+        if (bookmarkStorageFull) {
+
+            // Show alert with Danger!
+            var newAlert = '<div class="alert alert-danger alert-dismissible fade in out alertCustom alertCustomBookmarkStorageFull" role="alert">' +
+              '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
+              '<strong>ERROR!</strong> Updating storage failed. Bookmark Storage is full! Please remove some selected bookmarks.' +
+            '</div>'
+
+        } else {
+
+            // Show alert with Danger!
+            var newAlert = '<div class="alert alert-danger alert-dismissible fade in out alertCustom alertCustomDanger" role="alert">' +
+              '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
+              '<strong>ERROR!</strong> Updating storage failed. Try again or contact developer!' +
+            '</div>'
+
+        }
 
         errorFadeOut = false; // Don't fade alerts as there's errors
 

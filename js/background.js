@@ -8,6 +8,7 @@ var debugContextMenu = false; // Debug the context menu clicks
 var debugAlarm = false; // Check when the alarm fires
 
 var anyErrors = false; // Check for errors on updating bookmarks
+var bookmarkStorageFull = false; // Switch to check if Storage is full or not
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Context Menu Functions
@@ -30,7 +31,13 @@ function newNotification(title, allowNotifications) {
 
     // If there's errors, ignore notification setting
     if (anyErrors) {
-        chrome.notifications.create('', { type: 'basic', iconUrl: 'img/icon.png', title: 'Error: ' + title, message: 'Error adding bookmark. Storage possibly full!' }, function() { return;});
+
+        if (bookmarkStorageFull) {
+        chrome.notifications.create('', { type: 'basic', iconUrl: 'img/icon.png', title: 'Error: ' + title, message: 'Problem adding bookmark. Storage full!' }, function() { return;});
+        } else {
+        chrome.notifications.create('', { type: 'basic', iconUrl: 'img/icon.png', title: 'Error: ' + title, message: 'Problem adding bookmark. Please try again later or contact developer!' }, function() { return;});
+        }
+
     } else if (allowNotifications == true) {
         chrome.notifications.create('', { type: 'basic', iconUrl: 'img/icon.png', title: title, message: 'Bookmark was added to your list!' }, function() { return;});
     }
@@ -246,6 +253,14 @@ function updateBookmarkStorage( bookmarkNameOrg, bookmarkFaviconURL, bookmarkURL
                 if (debugContextMenu) {
                     console.log('[' + bookmarkObjName['name'] + '] Problem Adding/Updating bookmark to Array: ' + chrome.extension.lastError.message);
                 }
+
+                // Add switch if storage is full.
+                if (chrome.extension.lastError.message == 'QUOTA_BYTES_PER_ITEM quota exceeded') {
+                    bookmarkStorageFull = true;
+                } else {
+                    bookmarkStorageFull = false;
+                }
+
                 anyErrors = true;
             } else {
 

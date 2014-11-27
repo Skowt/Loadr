@@ -191,3 +191,7 @@ input.myBookmarksMainCheckbox {
     width: 400px;
     margin-bottom: 10px;
 }
+
+.alertCustomBookmarkStorageFull {
+    width: 720px;
+}
