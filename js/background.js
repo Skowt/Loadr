@@ -242,6 +242,52 @@ function updateBookmarkStorage( bookmarkNameOrg, bookmarkFaviconURL, bookmarkURL
         bookmarkObjName.bookmarkLists = 'none'; // Lists
         // bookmarkObjName.bookmarkLists = lists; // Lists
 
+        // Check if bookmark exists, if so, add hiphen
+        if (typeof(bookmarks[bookmarkObjName.name]) == 'object' && bookmarkObjName.bookmarkURL != bookmarks[bookmarkObjName.name].bookmarkURL) {
+
+            // Keep the bookmark title from the first check so we can use it to find all the partial titles in our bookmarks obj.
+            var bookmarkOriginal = bookmarkObjName.name.trim();
+
+            // If titles are the same, go through all bookmarks to find ones with this title in it.
+            // If we find one and the URL's match, skip adding this link.
+            // If we go through all of them and non match, increment name.
+            for (bookmark in bookmarks) {
+
+                // If Database bookmark title contains the current title, do...
+                if ( ~bookmarks[bookmark].name.trim().indexOf(bookmarkOriginal) ) {
+
+                    // If URL's match. skip adding link to bookmarks.
+                    if ( bookmarks[bookmark].bookmarkURL == bookmarkObjName.bookmarkURL ) {
+
+                        bookmarkObjName.name = bookmarks[bookmark].name.trim();
+                        break;
+
+                    }
+
+                }
+
+
+            }
+
+            // If we didn't find a bookmark with matching URL's, we increase until we find an empty. object.
+            if (bookmarkObjName.name == bookmarkOriginal) {
+
+                // Add hiphen and number to it if URL's don't match
+                for ( var i = 1; i < 10000; i++ ) {
+
+                    if (typeof(bookmarks[bookmarkObjName.name.trim() + " - " + i] ) != "object") {
+
+                        bookmarkObjName.name = bookmarkObjName.name.trim() + " - " + i;
+                        break;
+
+                    }
+
+                }
+            }
+
+
+        }
+
         bookmarks[bookmarkObjName.name] = bookmarkObjName; // Add the bookmarks to our list of bookmarks
 
         ///////////////////////////////////////////////////////////////////////////

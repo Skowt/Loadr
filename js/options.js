@@ -329,7 +329,9 @@ function removeBookmarkFromStorage ( bookmarkName ) {
     chrome.storage.sync.remove(bookmarkName, function() {
 
         if (chrome.extension.lastError) {
-            console.log('[ ' + bookmarkName + '] Problem removing bookmark from Array: ' + chrome.extension.lastError.message);
+            if (debug) {
+                console.log('[ ' + bookmarkName + '] Problem removing bookmark from Array: ' + chrome.extension.lastError.message);
+            }
             anyErrors = true;
         } else {
 
@@ -508,9 +510,6 @@ function printBookmarks(bookmarkBar) {
 
         }
 
-        // Debug Test
-        //  console.log(bookmark.id + ' - ' + bookmark.title + ' - ' + bookmark.url);
-
         // Check if bookmark already in list
         if (typeof(bookmarks[UserBookmark.title]) == "object") {
 
@@ -643,13 +642,13 @@ $( "#addManualBookmark" ).click( function() {
     newManualBookmark.bookmarkLists = 'none';
 
     // Check for iterations of object, add numbers if needed.
-    if (typeof(bookmarks[bookmarkName.trim()]) == "object") {
+    if (typeof(bookmarks[newManualBookmark.name.trim()]) == "object") {
 
         for ( var i = 1; i < 10000; i++ ) {
 
-            if (typeof(bookmarks[newManualBookmark.name] + " - " + i) != "object") {
+            if (typeof(bookmarks[newManualBookmark.name + " - " + i]) != "object") {
 
-                var bookmarkNameOrg = newManualBookmark.name + " - " + i;
+                newManualBookmark.name = newManualBookmark.name + " - " + i;
                 break;
 
             }
@@ -659,10 +658,10 @@ $( "#addManualBookmark" ).click( function() {
     }
 
     // Update Storage
-    updateBookmarkStorage ( bookmarkNameOrg, newManualBookmark.bookmarkFaviconURL, newManualBookmark.bookmarkURL, newManualBookmark.bookmarkDays, newManualBookmark.bookmarkLists )
+    updateBookmarkStorage ( newManualBookmark.name, newManualBookmark.bookmarkFaviconURL, newManualBookmark.bookmarkURL, newManualBookmark.bookmarkDays, newManualBookmark.bookmarkLists )
 
     // Generate 'Selected Link'
-    generateSelectedLink( '.selectedLinksGather', bookmarkNameOrg, newManualBookmark.bookmarkFaviconURL, newManualBookmark.bookmarkURL, '000000', '', true );
+    generateSelectedLink( '.selectedLinksGather', newManualBookmark.name, newManualBookmark.bookmarkFaviconURL, newManualBookmark.bookmarkURL, '000000', '', true );
 
     // Show Day Selector for bookmark
     $('.selectedLinksGather .myBookmarksMainCheckbox').each(function () {
