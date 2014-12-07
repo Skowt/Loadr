@@ -2,7 +2,7 @@
 
   "name": "Loadr",
   "description": "Load set lists of your favourite bookmarks with a single click.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "manifest_version": 2,
 
   "options_page": "options.html",

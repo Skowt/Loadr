@@ -162,7 +162,7 @@ function getToday(textOrNumber) {
 
     // If less than 0, it's Sunday
     if (todayNumber < 0) {
-        todayNumber = 7;
+        todayNumber = 6;
     }
 
     if (textOrNumber == 'text') {
