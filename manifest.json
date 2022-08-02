@@ -1,33 +1,21 @@
 {
-
-  "name": "Loadr",
-  "description": "Load set lists of your favourite bookmarks with a single click.",
-  "version": "1.0.4",
-  "manifest_version": 2,
-
-  "options_page": "options.html",
-
-  "permissions": [
-    "bookmarks",
-    "contextMenus",
-    "storage",
-    "chrome://favicon/",
-    "alarms",
-    "notifications"
-  ],
-
-  "icons": {
-    "16": "img/icon.png",
-    "48": "img/icon.png"
-  },
-
-  "browser_action": {
-    "default_icon": "img/icon.png",
-    "default_title": "Load Daily Links"
-  },
-
-  "background": {
-    "scripts": ["js/background.js"]
-  }
-
+   "background": {
+      "scripts": [ "js/background.js" ]
+   },
+   "browser_action": {
+      "default_icon": "img/icon.png",
+      "default_title": "Loadr - Daily Links"
+   },
+   "description": "Your favorite bookmarks, only one click away.",
+   "icons": {
+      "16": "img/icon.png",
+      "48": "img/icon.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlslhifn67vd4wTY6r76wv6yx8bzLrDubPjtZ65DKErHPaXv0N4QHmPGUdlGhjGGzzB4CDoalQlNrv9ICaCe2cIQZfMfJN2lraT2/ykEGtu9f0YHEWZI/zxWNvh1rqhvfAjKL2VmOQUJnPQbHZtOWTKsqi+6hfgxhJU9AR812ki6jVi1NkAebSMzg73xa8FvEFWRfWxTZ07LklvJdDj+1ftSJMyrVMaKjfBaoZ8tbJWvy/vfmhRvpc5QLZ/y3MRuxbxzvvvyxTQzUMXHr/S6W3y8K+Ns9Z27Tn+Q9ZKU+HKWnjFn4mooQjDpqi+nzBs0xHY/eUiBWkL99zFwBZvB5iQIDAQAB",
+   "manifest_version": 2,
+   "name": "Loadr - Daily Links",
+   "options_page": "options.html",
+   "permissions": [ "bookmarks", "contextMenus", "storage", "chrome://favicon/", "alarms", "notifications" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "1.0.7.2"
 }

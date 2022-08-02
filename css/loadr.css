@@ -74,29 +74,29 @@ h3 {
     padding-bottom: 3px;
 }
 
-#sub-folder-1 {
+.sub-folder-1 {
     padding-left: 20px;
 }
 
-#sub-folder-1 div {
+.sub-folder-1 div {
     border-left: 2px solid rgb(43, 157, 253);
     padding-left: 10px;
 }
 
-#sub-folder-2 {
+.sub-folder-2 {
     padding-left: 40px;
 }
 
-#sub-folder-2 div {
+.sub-folder-2 div {
     border-left: 2px solid rgb(33, 213, 82);
     padding-left: 10px;
 }
 
-#sub-folder-3 {
+.sub-folder-3 {
     padding-left: 60px;
 }
 
-#sub-folder-3 div {
+.sub-folder-3 div {
     border-left: 2px solid rgb(218, 174, 36);
     padding-left: 10px;
 }

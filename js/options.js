@@ -126,6 +126,11 @@ function loadOptions() {
                         saveOptions( optID, 'Yes' )
                         break;
 
+                    case 'opt_OpenLinks':
+
+                        saveOptions( optID, 'On Click' )
+                        break;    
+
                 }
 
             }
@@ -233,12 +238,14 @@ $(".dropdown-menu li").click( function( event ) {
 
     } else {
 
+        // Disabled showing alerts when updating settings
+        
         // Show alert saying success!
-        var newAlert = '<div class="alert alert-success alert-dismissible fade in out alertCustom alertCustomOptions" role="alert">' +
-          '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
-          '<strong>Success!</strong> Your options have been saved!' +
-        '</div>';
-        errorFadeOut = true; // Fade alerts as it's successful.
+        //var newAlert = '<div class="alert alert-success alert-dismissible fade in out alertCustom alertCustomOptions" role="alert">' +
+       //   '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
+       //   '<strong>Success!</strong> Your options have been saved!' +
+       // '</div>';
+       // errorFadeOut = true; // Fade alerts as it's successful.
 
 
     }
@@ -366,13 +373,8 @@ function loadBookmarks() {
         var count = 0;
 
         for ( bookmark in bookmarks) {
-
-            if (count < 1){
-                count++;
-            } else {
-                continue;
-            }
-
+            // We're just checking if the storage is empty. If it's got 1 or more hits, it's got something in it.
+            if (count < 1){ count++; } else { continue; }
         }
 
         if (count < 1) {
@@ -398,8 +400,7 @@ function loadBookmarks() {
 
             if (selectedBookmark.name != '') {
                 // generateSelectedLink( appendTo, bookmarkName, BookmarkFaviconURL, bookmarkURL, bookmarkDays, subFolder , isChecked )
-                generateSelectedLink( '.selectedLinksGather', selectedBookmark.name, selectedBookmark.bookmarkFaviconURL, selectedBookmark.bookmarkURL,
-                                      selectedBookmark.bookmarkDays , '' , true );
+                generateSelectedLink( '.selectedLinksGather', selectedBookmark.name, selectedBookmark.bookmarkFaviconURL, selectedBookmark.bookmarkURL, selectedBookmark.bookmarkDays , '' , true, '');
             }
 
         };
@@ -422,12 +423,14 @@ var lastFolderId = ''; // Remember the last folder ID for bookmarks
 var subFolderLevel = 0; // Generates levels of subfolder
 var masterSubFolder = 0; //Get current folder ID
 var isSubfolder = false; // Indent if sub-folder
+var heading = ''; // Remember the heading so we can setup ID's for different bookmarks
 
 // Get all Users Bookmarks
 function printBookmarks(bookmarkBar) {
 
   bookmarkBar.forEach(function(UserBookmark) {
 
+    // Category Creation. 
     if (UserBookmark.url == undefined && UserBookmark.title != "Bookmarks bar" && UserBookmark.title != "") {
 
         // Current folder's parent
@@ -471,18 +474,27 @@ function printBookmarks(bookmarkBar) {
 
             }
 
-            $('.myBookmarksGather').append('<h5 class="subfolder" id="sub-folder-' + subFolderLevel + '">' + UserBookmark.title + '</h5>');
+            $('.myBookmarksGather').append('<h5 class="subfolder sub-folder-' + subFolderLevel + '">' + UserBookmark.title + '</h5>');
             lastFolderId = UserBookmark.id; // Update current parentID
 
         } else {
 
             // Is just a folder not a sub-folder
-            $('.myBookmarksGather').append('<hr>\n<h4>' + UserBookmark.title + '</h4>');
+            if (heading != "") {
+                $("#" + heading + "Head").nextUntil('h4').wrapAll('<div id="' + heading + '" class="collapse" />');           
+            }
+            
+            heading = UserBookmark.title;
+            heading = heading.replace(/\s+/g, ''); // Remove spaces from heading
+            heading = heading.replace(/["']/g, "") // Remove all quotation marks from heading            
+            
+            $('.myBookmarksGather').append('<hr>\n<h4 id="' + heading + 'Head">' + UserBookmark.title + ' | <button type="button" data-toggle="collapse" data-target="#' + heading + '" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-star" aria-hidden="true"></span> Expand</button></h4>');
             lastFolderId = UserBookmark.id; // Update current parentID
             subFolderLevel = 0; // Reset sub-folder level
             isSubfolder = false; // No longer in a sub-folder
         }
-
+    
+    // Bookmark entry under category or sub-category.
     } else if (UserBookmark.title != "Bookmarks bar" && UserBookmark.title != "") {
 
         currentParent = UserBookmark.parentId;
@@ -500,7 +512,8 @@ function printBookmarks(bookmarkBar) {
 
             if (currentParent == masterId) {
                 isSubfolder = false; // Switch back as we're leaving a subfolder.
-                $('.myBookmarksGather').append('<hr>'); // Add a line break if we're going back to master folder.
+                $("#" + heading + "Head").nextUntil('h4').wrapAll('<div id="' + heading + '" class="collapse" />');
+                $('.myBookmarksGather').append('<hr>'); // Add a line rule if we're going back to master folder.
 
             } else {
                 $('.myBookmarksGather').append('<br />');
@@ -586,14 +599,15 @@ function printBookmarks(bookmarkBar) {
         favicon = 'chrome://favicon/' + UserBookmark.url;
 
         if ( subFolderLevel > 0 ) {
-            subFolder = 'id="sub-folder-' + subFolderLevel + '"';
+            subFolder = 'sub-folder-' + subFolderLevel;
         } else {
             subFolder = '';
         }
+        
 
         // Generate link
         //generateSelectedLink( appendTo, bookmarkName, BookmarkFaviconURL, bookmarkURL, bookmarkDays , subFolder , isChecked )
-        generateSelectedLink( '.myBookmarksGather', UserBookmark.title, favicon, UserBookmark.url, '' , subFolder , false )
+        generateSelectedLink( '.myBookmarksGather', UserBookmark.title, favicon, UserBookmark.url, '' , subFolder , false, heading )
 
     }
 
@@ -661,7 +675,7 @@ $( "#addManualBookmark" ).click( function() {
     updateBookmarkStorage ( newManualBookmark.name, newManualBookmark.bookmarkFaviconURL, newManualBookmark.bookmarkURL, newManualBookmark.bookmarkDays, newManualBookmark.bookmarkLists )
 
     // Generate 'Selected Link'
-    generateSelectedLink( '.selectedLinksGather', newManualBookmark.name, newManualBookmark.bookmarkFaviconURL, newManualBookmark.bookmarkURL, '000000', '', true );
+    generateSelectedLink( '.selectedLinksGather', newManualBookmark.name, newManualBookmark.bookmarkFaviconURL, newManualBookmark.bookmarkURL, '000000', '', true, '' );
 
     // Show Day Selector for bookmark
     $('.selectedLinksGather .myBookmarksMainCheckbox').each(function () {
@@ -937,6 +951,11 @@ $( ".myBookmarksAddButton" ).click( function() {
 
                 // Move element to selected links
                 $(this).closest('.myBookmarksSingleRow').fadeOut('medium',function () {
+                    
+                    $(this).closest('.myBookmarksSingleRow').removeClass(function(index, css) {
+                        return (css.match(new RegExp('\\b(sub-folder-\\S*)\\b', 'g')) || []).join(' ');
+                    });
+                    
                     $(this).closest('.myBookmarksSingleRow').appendTo('.selectedLinksGather').fadeIn('medium',function() {
 
                     // Show Day Selector for bookmark
@@ -976,7 +995,7 @@ $( ".myBookmarksAddButton" ).click( function() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // 'Selected Link' Generator, with Day Selector added.
-function generateSelectedLink( appendTo, bookmarkName, BookmarkFaviconURL, bookmarkURL, bookmarkDays, subFolder , isChecked ) {
+function generateSelectedLink( appendTo, bookmarkName, BookmarkFaviconURL, bookmarkURL, bookmarkDays, subFolder , isChecked, heading ) {
 
     // isChecked will be true if Checkbox must be ticked.
     // isIDSelected will be true if link goes into 'Selected Links' section.
@@ -990,9 +1009,14 @@ function generateSelectedLink( appendTo, bookmarkName, BookmarkFaviconURL, bookm
         idString = 'id="selected"';
     } else {
         checkedString = '';
-        idString = '';
+        
+        if (heading != '') {
+            idString= 'id="' + heading + '"'
+        } else {
+            idString = '';
+        }
+        
     }
-
 
     // Calculate Days Selector tickboxes from storage
     if (isChecked) {
@@ -1019,9 +1043,9 @@ function generateSelectedLink( appendTo, bookmarkName, BookmarkFaviconURL, bookm
         var days = [ '','','','','','','' ];
 
     }
-
+    
     var newBookmark = //'<!-- SINGLE ROW START -->' +
-        '<div class="myBookmarksSingleRow" ' + subFolder + ' ' + idString + '>' +
+        '<div class="myBookmarksSingleRow ' + subFolder + '" ' + idString + '>' +
                 '' +
               '<div class="checkbox myBookmarkRowFix">' +
                 '<label>' +
@@ -1241,10 +1265,9 @@ $( document ).ready(function() {
 
     // Generate Users Bookmarks
     chrome.bookmarks.getTree(function(bookmarkBar) { printBookmarks(bookmarkBar);})
-
+    
 });
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// 10. 'In Progress' Functions
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-

@@ -1,4 +1,4 @@
-// Copyright (c) 2014 - Daniel Pietersen - TroubleShootr.net
+// Copyright (c) 2015 - Daniel Pietersen - TroubleShootr.net
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Variables
@@ -29,6 +29,14 @@ function sleep(milliseconds) {
 
 function newNotification(title, allowNotifications) {
 
+    // What clicking the notification will do.
+    chrome.notifications.onClicked.addListener(function() {
+
+        // Redirect to options.html page on Notifications click
+        chrome.tabs.create({"url": 'options.html', "selected": true});
+
+    });    
+    
     // If there's errors, ignore notification setting
     if (anyErrors) {
 
@@ -415,9 +423,42 @@ function loadBookmarks(window, newWindow) {
 /// Notification onClick Function
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-chrome.notifications.onClicked.addListener(function() {
 
-    // Redirect to options.html page on Notifications click
-    chrome.tabs.create({"url": 'options.html', "selected": true});
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Pop up on Extension updated Function
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+chrome.runtime.onInstalled.addListener(function(ReturnedStatus) {
+    
+    if (ReturnedStatus['reason'] == 'update') {
+    
+        // Action to take when we're running a notification for an update.
+        chrome.notifications.onClicked.addListener(function() {
+
+            // Redirect to options.html page on Notifications click
+            chrome.tabs.create({"url": 'https://chrome.google.com/webstore/detail/loadr-daily-links/aikmakbdhkfnfjhjbhakiipegcminlco', "selected": true});
+
+        });    
+
+        // Create an alert when Loadr is updated
+        chrome.notifications.create('', { type: 'basic', iconUrl: 'img/icon.png', title: 'Loadr Update Installed', message: 'Click here to view the latest changes.', isClickable: true }, function() { return;});
+        
+    }
+    
+});
+    
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Load Links on New Window Function (If options are set.)
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+chrome.windows.onCreated.addListener(function() {
+    
+    chrome.storage.sync.get('options', function(optionsReturned) {
+
+        if ( optionsReturned.options != undefined && optionsReturned.options['opt_OpenLinks'] == 'On Chrome Start'  ) {
+             chrome.windows.getCurrent(function (window) { loadBookmarks(window,true); });
+        }
+
+    });
+        
 });
