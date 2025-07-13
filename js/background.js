@@ -457,14 +457,19 @@ chrome.runtime.onInstalled.addListener(function(ReturnedStatus) {
 });
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Load Links on New Window Function (If options are set.)
+/// Load Links on Chrome Start Function
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-chrome.windows.onCreated.addListener(function() {
+
+// Load bookmarks when Chrome starts up (not on new windows)
+chrome.runtime.onStartup.addListener(function() {
 
     chrome.storage.sync.get('options', function(optionsReturned) {
 
         if ( optionsReturned.options != undefined && optionsReturned.options['opt_OpenLinks'] == 'On Chrome Start'  ) {
-             chrome.windows.getCurrent(function (window) { loadBookmarks(window,true); });
+            // Create a new window and load bookmarks into it
+            chrome.windows.create({ 'focused': true, }, function (window) {
+                loadBookmarks(window, true);
+            });
         }
 
     });
