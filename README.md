@@ -18,13 +18,6 @@ Features
 > - Ability to load links in new tabs or a new window.
 > - Disable / Enable notifications (For context menu 'bookmark adding' notifications)
 
-Current Status
-======
->**[27th Nov 2014]**
-> - I've got the main code sorted and am now working on the implementation of adding bookmarks with the same titles.
-> - Beta-testing is going well and squashing all the bugs.
-> - Recently reworked the storage system to increase total stored bookmark capacity from 30 to 510.
-
 
 Got a question, query or request?
 *Feel free to leave feedback in the Chrome Web Store and I'll look into it as soon as I can!*
