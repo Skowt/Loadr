@@ -14,13 +14,9 @@ var bookmarkStorageFull = false; // Switch to check if Storage is full or not
 /// Context Menu Functions
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
+// Replace synchronous sleep with async delay
+function delay(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,19 +31,19 @@ function newNotification(title, allowNotifications) {
         // Redirect to options.html page on Notifications click
         chrome.tabs.create({"url": 'options.html', "selected": true});
 
-    });    
-    
+    });
+
     // If there's errors, ignore notification setting
     if (anyErrors) {
 
         if (bookmarkStorageFull) {
-        chrome.notifications.create('', { type: 'basic', iconUrl: 'img/icon.png', title: 'Error: ' + title, message: 'Problem adding bookmark. Storage full!' }, function() { return;});
+        chrome.notifications.create('', { type: 'basic', iconUrl: chrome.runtime.getURL('img/icon.png'), title: 'Error: ' + title, message: 'Problem adding bookmark. Storage full!' }, function() { return;});
         } else {
-        chrome.notifications.create('', { type: 'basic', iconUrl: 'img/icon.png', title: 'Error: ' + title, message: 'Problem adding bookmark. Please try again later or contact developer!' }, function() { return;});
+        chrome.notifications.create('', { type: 'basic', iconUrl: chrome.runtime.getURL('img/icon.png'), title: 'Error: ' + title, message: 'Problem adding bookmark. Please try again later or contact developer!' }, function() { return;});
         }
 
     } else if (allowNotifications == true) {
-        chrome.notifications.create('', { type: 'basic', iconUrl: 'img/icon.png', title: title, message: 'Bookmark was added to your list!' }, function() { return;});
+        chrome.notifications.create('', { type: 'basic', iconUrl: chrome.runtime.getURL('img/icon.png'), title: title, message: 'Bookmark was added to your list!' }, function() { return;});
     }
 
 }
@@ -69,7 +65,7 @@ function contextClick(info, tab) {
 
     // Needed Variables
     var newbookmarkTitle = tab.title;
-    var newbookmarkfavicon = 'chrome://favicon/' + tab.url;
+    var newbookmarkfavicon = tab.favIconUrl;
     var newbookmarkURL = tab.url;
 
     chrome.storage.sync.get('options', function(optionsReturned) {
@@ -136,15 +132,18 @@ function contextClick(info, tab) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Create a parent item and two children.
-var loadrmenuitem = chrome.contextMenus.create({"title": "Loadr"});
-var addtolinks = chrome.contextMenus.create({"title": "Add To Daily Links", "parentId": loadrmenuitem });
-var options = chrome.contextMenus.create({"title": "Options", "id": "options" , "parentId": loadrmenuitem, "onclick": contextClick});
+var loadrmenuitem = chrome.contextMenus.create({"title": "Loadr", "id": "loadrmenuitem"});
+var addtolinks = chrome.contextMenus.create({"title": "Add To Daily Links", "id": "addtolinks", "parentId": loadrmenuitem });
+var options = chrome.contextMenus.create({"title": "Options", "id": "options" , "parentId": loadrmenuitem});
 
 // Create selection options for adding links
-var selection_everyday = chrome.contextMenus.create({"title": "Everyday", "id": "addlink_Everyday", "parentId": addtolinks,  "onclick": contextClick});
-var selection_weekdays = chrome.contextMenus.create({"title": "Weekdays", "id": "addlink_Weekdays", "parentId": addtolinks, "onclick": contextClick});
-var selection_weekends = chrome.contextMenus.create({"title": "Weekends", "id": "addlink_Weekends", "parentId": addtolinks, "onclick": contextClick});
-var selection_none = chrome.contextMenus.create({"title": "None", "id": "addlink_None", "parentId": addtolinks, "onclick": contextClick});
+var selection_everyday = chrome.contextMenus.create({"title": "Everyday", "id": "addlink_Everyday", "parentId": addtolinks});
+var selection_weekdays = chrome.contextMenus.create({"title": "Weekdays", "id": "addlink_Weekdays", "parentId": addtolinks});
+var selection_weekends = chrome.contextMenus.create({"title": "Weekends", "id": "addlink_Weekends", "parentId": addtolinks});
+var selection_none = chrome.contextMenus.create({"title": "None", "id": "addlink_None", "parentId": addtolinks});
+
+// Handle context menu clicks
+chrome.contextMenus.onClicked.addListener(contextClick);
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,8 +187,8 @@ function currentDayInBadge() {
     var todayBadge = getToday('text').substring(0,3);
 
     // Set badge color and text
-    chrome.browserAction.setBadgeBackgroundColor({color: "#0C79E8"}); // Set background badge color
-    chrome.browserAction.setBadgeText({text: todayBadge});
+    chrome.action.setBadgeBackgroundColor({color: "#0C79E8"}); // Set background badge color
+    chrome.action.setBadgeText({text: todayBadge});
 
     // Get time until tomorrow
     var today = new Date();
@@ -248,7 +247,6 @@ function updateBookmarkStorage( bookmarkNameOrg, bookmarkFaviconURL, bookmarkURL
         bookmarkObjName.bookmarkDays = days; // Days
         // To be implemented
         bookmarkObjName.bookmarkLists = 'none'; // Lists
-        // bookmarkObjName.bookmarkLists = lists; // Lists
 
         // Check if bookmark exists, if so, add hiphen
         if (typeof(bookmarks[bookmarkObjName.name]) == 'object' && bookmarkObjName.bookmarkURL != bookmarks[bookmarkObjName.name].bookmarkURL) {
@@ -303,13 +301,13 @@ function updateBookmarkStorage( bookmarkNameOrg, bookmarkFaviconURL, bookmarkURL
         // Sync bookmarks Array
         chrome.storage.sync.set(bookmarks, function() {
 
-            if (chrome.extension.lastError) {
+            if (chrome.runtime.lastError) {
                 if (debugContextMenu) {
-                    console.log('[' + bookmarkObjName['name'] + '] Problem Adding/Updating bookmark to Array: ' + chrome.extension.lastError.message);
+                    console.log('[' + bookmarkObjName['name'] + '] Problem Adding/Updating bookmark to Array: ' + chrome.runtime.lastError.message);
                 }
 
                 // Add switch if storage is full.
-                if (chrome.extension.lastError.message == 'QUOTA_BYTES_PER_ITEM quota exceeded') {
+                if (chrome.runtime.lastError.message == 'QUOTA_BYTES_PER_ITEM quota exceeded') {
                     bookmarkStorageFull = true;
                 } else {
                     bookmarkStorageFull = false;
@@ -336,7 +334,7 @@ function updateBookmarkStorage( bookmarkNameOrg, bookmarkFaviconURL, bookmarkURL
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // onClick checker for browser icon
-chrome.browserAction.onClicked.addListener(function() {
+chrome.action.onClicked.addListener(function() {
 
     chrome.storage.sync.get('options', function(optionsReturned) {
 
@@ -353,7 +351,7 @@ chrome.browserAction.onClicked.addListener(function() {
 });
 
 // Load Bookmarks
-function loadBookmarks(window, newWindow) {
+async function loadBookmarks(window, newWindow) {
 
     var today = new Date();
     var dayNumber = getToday('number');
@@ -392,19 +390,14 @@ function loadBookmarks(window, newWindow) {
             // Check how many bookmarks get opened. If none, display notification.
             var bookmarkOpenCount = 0;
 
-            for (bookmark in bookmarks) {
+            // Process bookmarks sequentially with delay
+            processBookmarks(bookmarks, dayNumber, window.id).then(function(count) {
+                bookmarkOpenCount = count;
 
-                if (bookmarks[bookmark].bookmarkDays[dayNumber] == '1') {
-                    chrome.tabs.create({"url": bookmarks[bookmark].bookmarkURL, "windowId": window.id, "selected": false});
-                    bookmarkOpenCount++;
-                    sleep(150);
+                if (bookmarkOpenCount < 1) {
+                    chrome.notifications.create('', { type: 'basic', iconUrl: chrome.runtime.getURL('img/icon.png'), title: 'Sorry...', message: 'No bookmarks selected to open today.' }, function() {});
                 }
-
-            }
-
-            if (bookmarkOpenCount < 1) {
-                chrome.notifications.create('', { type: 'basic', iconUrl: 'img/icon.png', title: 'Sorry...', message: 'No bookmarks selected to open today.' }, function() {});
-            }
+            });
 
         }
 
@@ -419,6 +412,21 @@ function loadBookmarks(window, newWindow) {
 
 }
 
+// Helper function to process bookmarks with delay
+async function processBookmarks(bookmarks, dayNumber, windowId) {
+    let count = 0;
+
+    for (let bookmark in bookmarks) {
+        if (bookmarks[bookmark].bookmarkDays[dayNumber] == '1') {
+            chrome.tabs.create({"url": bookmarks[bookmark].bookmarkURL, "windowId": windowId, "selected": false});
+            count++;
+            await delay(150);
+        }
+    }
+
+    return count;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Notification onClick Function
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -430,29 +438,29 @@ function loadBookmarks(window, newWindow) {
 /// Pop up on Extension updated Function
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 chrome.runtime.onInstalled.addListener(function(ReturnedStatus) {
-    
+
     if (ReturnedStatus['reason'] == 'update') {
-    
+
         // Action to take when we're running a notification for an update.
         chrome.notifications.onClicked.addListener(function() {
 
             // Redirect to options.html page on Notifications click
             chrome.tabs.create({"url": 'https://chrome.google.com/webstore/detail/loadr-daily-links/aikmakbdhkfnfjhjbhakiipegcminlco', "selected": true});
 
-        });    
+        });
 
         // Create an alert when Loadr is updated
-        chrome.notifications.create('', { type: 'basic', iconUrl: 'img/icon.png', title: 'Loadr Update Installed', message: 'Click here to view the latest changes.', isClickable: true }, function() { return;});
-        
+        chrome.notifications.create('', { type: 'basic', iconUrl: chrome.runtime.getURL('img/icon.png'), title: 'Loadr Update Installed', message: 'Click here to view the latest changes.', isClickable: true }, function() { return;});
+
     }
-    
+
 });
-    
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Load Links on New Window Function (If options are set.)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 chrome.windows.onCreated.addListener(function() {
-    
+
     chrome.storage.sync.get('options', function(optionsReturned) {
 
         if ( optionsReturned.options != undefined && optionsReturned.options['opt_OpenLinks'] == 'On Chrome Start'  ) {
@@ -460,5 +468,5 @@ chrome.windows.onCreated.addListener(function() {
         }
 
     });
-        
+
 });

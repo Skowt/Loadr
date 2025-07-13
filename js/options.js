@@ -129,7 +129,7 @@ function loadOptions() {
                     case 'opt_OpenLinks':
 
                         saveOptions( optID, 'On Click' )
-                        break;    
+                        break;
 
                 }
 
@@ -166,14 +166,14 @@ function saveOptions( optionToSave, value ) {
 
     chrome.storage.sync.set(optionsPackage, function() {
 
-        if (chrome.extension.lastError) {
+        if (chrome.runtime.lastError) {
 
             if (debug) {
-                console.log('Problem Saving Options: ' + chrome.extension.lastError.message);
+                console.log('Problem Saving Options: ' + chrome.runtime.lastError.message);
             }
 
             // Add switch if bookmark storage is full
-            if (chrome.extension.lastError.message == 'QUOTA_BYTES_PER_ITEM quota exceeded') {
+            if (chrome.runtime.lastError.message == 'QUOTA_BYTES_PER_ITEM quota exceeded') {
                 bookmarkStorageFull = true;
             } else {
                 bookmarkStorageFull = false;
@@ -239,7 +239,7 @@ $(".dropdown-menu li").click( function( event ) {
     } else {
 
         // Disabled showing alerts when updating settings
-        
+
         // Show alert saying success!
         //var newAlert = '<div class="alert alert-success alert-dismissible fade in out alertCustom alertCustomOptions" role="alert">' +
        //   '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' +
@@ -296,15 +296,15 @@ function updateBookmarkStorage ( bookmarkNameOrg, bookmarkFaviconURL, bookmarkUR
     // Sync bookmarks Array
     chrome.storage.sync.set(bookmarks, function() {
 
-        if (chrome.extension.lastError) {
+        if (chrome.runtime.lastError) {
 
             if (debug) {
-            console.log('[' + bookmarkObjName['name'] + '] Problem Adding/Updating bookmark to Array: ' + chrome.extension.lastError.message);
+            console.log('[' + bookmarkObjName['name'] + '] Problem Adding/Updating bookmark to Array: ' + chrome.runtime.lastError.message);
             }
             anyErrors = true;
 
             // Add switch if bookmark storage is full
-            if (chrome.extension.lastError.message == 'QUOTA_BYTES_PER_ITEM quota exceeded') {
+            if (chrome.runtime.lastError.message == 'QUOTA_BYTES_PER_ITEM quota exceeded') {
                 bookmarkStorageFull = true;
             } else {
                 bookmarkStorageFull = false;
@@ -335,9 +335,9 @@ function removeBookmarkFromStorage ( bookmarkName ) {
     // Sync bookmarks Array
     chrome.storage.sync.remove(bookmarkName, function() {
 
-        if (chrome.extension.lastError) {
+        if (chrome.runtime.lastError) {
             if (debug) {
-                console.log('[ ' + bookmarkName + '] Problem removing bookmark from Array: ' + chrome.extension.lastError.message);
+                console.log('[ ' + bookmarkName + '] Problem removing bookmark from Array: ' + chrome.runtime.lastError.message);
             }
             anyErrors = true;
         } else {
@@ -430,7 +430,7 @@ function printBookmarks(bookmarkBar) {
 
   bookmarkBar.forEach(function(UserBookmark) {
 
-    // Category Creation. 
+    // Category Creation.
     if (UserBookmark.url == undefined && UserBookmark.title != "Bookmarks bar" && UserBookmark.title != "") {
 
         // Current folder's parent
@@ -481,19 +481,19 @@ function printBookmarks(bookmarkBar) {
 
             // Is just a folder not a sub-folder
             if (heading != "") {
-                $("#" + heading + "Head").nextUntil('h4').wrapAll('<div id="' + heading + '" class="collapse" />');           
+                $("#" + heading + "Head").nextUntil('h4').wrapAll('<div id="' + heading + '" class="collapse" />');
             }
-            
+
             heading = UserBookmark.title;
             heading = heading.replace(/\s+/g, ''); // Remove spaces from heading
-            heading = heading.replace(/["']/g, "") // Remove all quotation marks from heading            
-            
+            heading = heading.replace(/["']/g, "") // Remove all quotation marks from heading
+
             $('.myBookmarksGather').append('<hr>\n<h4 id="' + heading + 'Head">' + UserBookmark.title + ' | <button type="button" data-toggle="collapse" data-target="#' + heading + '" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-star" aria-hidden="true"></span> Expand</button></h4>');
             lastFolderId = UserBookmark.id; // Update current parentID
             subFolderLevel = 0; // Reset sub-folder level
             isSubfolder = false; // No longer in a sub-folder
         }
-    
+
     // Bookmark entry under category or sub-category.
     } else if (UserBookmark.title != "Bookmarks bar" && UserBookmark.title != "") {
 
@@ -596,14 +596,14 @@ function printBookmarks(bookmarkBar) {
         }
 
 
-        favicon = 'chrome://favicon/' + UserBookmark.url;
+        favicon = getFaviconURL(UserBookmark.url, 16);
 
         if ( subFolderLevel > 0 ) {
             subFolder = 'sub-folder-' + subFolderLevel;
         } else {
             subFolder = '';
         }
-        
+
 
         // Generate link
         //generateSelectedLink( appendTo, bookmarkName, BookmarkFaviconURL, bookmarkURL, bookmarkDays , subFolder , isChecked )
@@ -651,7 +651,7 @@ $( "#addManualBookmark" ).click( function() {
     newManualBookmark.bookmarkURL = newManualBookmark.bookmarkURL.replace(/\s/g, ''); // Remove all spaces
 
     newManualBookmark.name = $('#addManualLinkTitle').val().trim();
-    newManualBookmark.bookmarkFaviconURL = 'chrome://favicon/' + newManualBookmark.bookmarkURL;
+    newManualBookmark.bookmarkFaviconURL = getFaviconURL(newManualBookmark.bookmarkURL, 16);
     newManualBookmark.bookmarkDays = '0000000';
     newManualBookmark.bookmarkLists = 'none';
 
@@ -951,11 +951,11 @@ $( ".myBookmarksAddButton" ).click( function() {
 
                 // Move element to selected links
                 $(this).closest('.myBookmarksSingleRow').fadeOut('medium',function () {
-                    
+
                     $(this).closest('.myBookmarksSingleRow').removeClass(function(index, css) {
                         return (css.match(new RegExp('\\b(sub-folder-\\S*)\\b', 'g')) || []).join(' ');
                     });
-                    
+
                     $(this).closest('.myBookmarksSingleRow').appendTo('.selectedLinksGather').fadeIn('medium',function() {
 
                     // Show Day Selector for bookmark
@@ -994,6 +994,14 @@ $( ".myBookmarksAddButton" ).click( function() {
 /// 8. Misc. Functions
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Generate favicon URL using the new Manifest V3 API
+function getFaviconURL(pageUrl, size = 16) {
+    const url = new URL(chrome.runtime.getURL("/_favicon/"));
+    url.searchParams.set("pageUrl", pageUrl);
+    url.searchParams.set("size", size.toString());
+    return url.toString();
+}
+
 // 'Selected Link' Generator, with Day Selector added.
 function generateSelectedLink( appendTo, bookmarkName, BookmarkFaviconURL, bookmarkURL, bookmarkDays, subFolder , isChecked, heading ) {
 
@@ -1009,13 +1017,13 @@ function generateSelectedLink( appendTo, bookmarkName, BookmarkFaviconURL, bookm
         idString = 'id="selected"';
     } else {
         checkedString = '';
-        
+
         if (heading != '') {
             idString= 'id="' + heading + '"'
         } else {
             idString = '';
         }
-        
+
     }
 
     // Calculate Days Selector tickboxes from storage
@@ -1043,7 +1051,7 @@ function generateSelectedLink( appendTo, bookmarkName, BookmarkFaviconURL, bookm
         var days = [ '','','','','','','' ];
 
     }
-    
+
     var newBookmark = //'<!-- SINGLE ROW START -->' +
         '<div class="myBookmarksSingleRow ' + subFolder + '" ' + idString + '>' +
                 '' +
@@ -1265,7 +1273,7 @@ $( document ).ready(function() {
 
     // Generate Users Bookmarks
     chrome.bookmarks.getTree(function(bookmarkBar) { printBookmarks(bookmarkBar);})
-    
+
 });
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
