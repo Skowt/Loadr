@@ -20,30 +20,52 @@ function delay(milliseconds) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Notification Event Listeners (Must be at top level for Manifest V3)
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Handle notification clicks - redirect to appropriate page based on notification type
+chrome.notifications.onClicked.addListener(function(notificationId) {
+    if (notificationId === 'update-notification') {
+        // For update notifications, redirect to Chrome Web Store
+        chrome.tabs.create({"url": 'https://chrome.google.com/webstore/detail/loadr-daily-links/aikmakbdhkfnfjhjbhakiipegcminlco', "selected": true});
+    } else {
+        // For other notifications, redirect to options page
+        chrome.tabs.create({"url": 'options.html', "selected": true});
+    }
+});
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Context Menu Functions
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function newNotification(title, allowNotifications) {
 
-    // What clicking the notification will do.
-    chrome.notifications.onClicked.addListener(function() {
-
-        // Redirect to options.html page on Notifications click
-        chrome.tabs.create({"url": 'options.html', "selected": true});
-
-    });
-
     // If there's errors, ignore notification setting
     if (anyErrors) {
 
         if (bookmarkStorageFull) {
-        chrome.notifications.create('', { type: 'basic', iconUrl: chrome.runtime.getURL('img/icon.png'), title: 'Error: ' + title, message: 'Problem adding bookmark. Storage full!' }, function() { return;});
+            chrome.notifications.create('', {
+                type: 'basic',
+                iconUrl: chrome.runtime.getURL('img/icon.png'),
+                title: 'Error: ' + title,
+                message: 'Problem adding bookmark. Storage full!'
+            });
         } else {
-        chrome.notifications.create('', { type: 'basic', iconUrl: chrome.runtime.getURL('img/icon.png'), title: 'Error: ' + title, message: 'Problem adding bookmark. Please try again later or contact developer!' }, function() { return;});
+            chrome.notifications.create('', {
+                type: 'basic',
+                iconUrl: chrome.runtime.getURL('img/icon.png'),
+                title: 'Error: ' + title,
+                message: 'Problem adding bookmark. Please try again later or contact developer!'
+            });
         }
 
     } else if (allowNotifications == true) {
-        chrome.notifications.create('', { type: 'basic', iconUrl: chrome.runtime.getURL('img/icon.png'), title: title, message: 'Bookmark was added to your list!' }, function() { return;});
+        chrome.notifications.create('', {
+            type: 'basic',
+            iconUrl: chrome.runtime.getURL('img/icon.png'),
+            title: title,
+            message: 'Bookmark was added to your list!'
+        });
     }
 
 }
@@ -395,7 +417,12 @@ async function loadBookmarks(window, newWindow) {
                 bookmarkOpenCount = count;
 
                 if (bookmarkOpenCount < 1) {
-                    chrome.notifications.create('', { type: 'basic', iconUrl: chrome.runtime.getURL('img/icon.png'), title: 'Sorry...', message: 'No bookmarks selected to open today.' }, function() {});
+                    chrome.notifications.create('', {
+                        type: 'basic',
+                        iconUrl: chrome.runtime.getURL('img/icon.png'),
+                        title: 'Sorry...',
+                        message: 'No bookmarks selected to open today.'
+                    });
                 }
             });
 
@@ -441,16 +468,13 @@ chrome.runtime.onInstalled.addListener(function(ReturnedStatus) {
 
     if (ReturnedStatus['reason'] == 'update') {
 
-        // Action to take when we're running a notification for an update.
-        chrome.notifications.onClicked.addListener(function() {
-
-            // Redirect to options.html page on Notifications click
-            chrome.tabs.create({"url": 'https://chrome.google.com/webstore/detail/loadr-daily-links/aikmakbdhkfnfjhjbhakiipegcminlco', "selected": true});
-
-        });
-
         // Create an alert when Loadr is updated
-        chrome.notifications.create('', { type: 'basic', iconUrl: chrome.runtime.getURL('img/icon.png'), title: 'Loadr Update Installed', message: 'Click here to view the latest changes.', isClickable: true }, function() { return;});
+        chrome.notifications.create('update-notification', {
+            type: 'basic',
+            iconUrl: chrome.runtime.getURL('img/icon.png'),
+            title: 'Loadr Update Installed',
+            message: 'Click here to view the latest changes.'
+        });
 
     }
 
